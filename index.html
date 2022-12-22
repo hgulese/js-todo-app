@@ -16,9 +16,22 @@
                     <div class="card-header">
                         Todo App 
                     </div>
+
+                    <div class="card-body">
+                        <form>
+                            <div class="input-group">
+                                <input type="text" id="txtTaskName" class="form-control">
+                                <button type="submit" class="btn btn-primary" id="btnAddNewTask">Add</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="card mt-3">
+                    <div class="card-header">
+                        <button type="submit" id="btnRemoveTask" class="btn btn-danger btn-sm float-end">Clear</button>
+                    </div>
+
                     <ul id="task-list" class="list-group list-group-flush">
                         <!-- <li class="task list-group-item">
                             <div class="form-check">
