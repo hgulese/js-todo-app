@@ -2,27 +2,28 @@ const ul = document.getElementById("task-list");
 const btnAdd = document.getElementById("btnAddNewTask");
 const btnClear = document.getElementById("btnClear");
 const txtTaskName = document.querySelector("#txtTaskName");
+const filters = document.querySelectorAll(".filters span");
 
-let taskList = [
-    { "id": 1, "taskName": "Task 1", "status": "completed" },
-    { "id": 2, "taskName": "Task 2", "status": "pending" },
-    { "id": 3, "taskName": "Task 3", "status": "completed" },
-    { "id": 4, "taskName": "Task 4", "status": "pending" },
-];
+let taskList = [];
+
+if (localStorage.getItem("taskList") != null) {
+    taskList = JSON.parse(localStorage.getItem("taskList"));
+}
 
 let editId;
 let isEditTask = false;
 
-displayTask();
+displayTask("all");
 
-function displayTask() {
+function displayTask(filter) {
     ul.innerHTML = "";
 
     if (taskList.length != 0) {
         for (let task of taskList) {
             let completed = task.status == "completed" ? "checked" : "";
 
-            let li = `
+            if (filter == task.status || filter == "all") {
+                let li = `
                 <li class="task list-group-item">
                     <div class="form-check">
                         <input type="checkbox" onClick="updateStatus(this)" id="${task.id}" class="form-check-input" ${completed}>
@@ -39,15 +40,17 @@ function displayTask() {
                         </ul>
                     </div>
                 </li>
-            `;
-
-            ul.insertAdjacentHTML("beforeend", li);
+                `;
+            
+                ul.insertAdjacentHTML("beforeend", li);
+            }
         }
     } else {
         ul.innerHTML = "<p class='p-3 m-0'>Your task list is empty.</p>"
     }
 }
 
+// Add task
 btnAdd.addEventListener("click", (event) => {
 
     btnAdd.innerHTML = "Add";
@@ -55,7 +58,7 @@ btnAdd.addEventListener("click", (event) => {
     if (txtTaskName.value != "") {
         if (!isEditTask) {
             // add
-            taskList.push({ "id": taskList.length + 1, "taskName": txtTaskName.value });
+            taskList.push({ "id": taskList.length + 1, "taskName": txtTaskName.value, "status": "pending" });
         } else {
             // update
             for (let task of taskList) {
@@ -65,9 +68,11 @@ btnAdd.addEventListener("click", (event) => {
                 isEditTask = false;
             }
         }
-        displayTask();
+        displayTask(document.querySelector("span.active").id);
 
         txtTaskName.value = "";
+
+        localStorage.setItem("taskList", JSON.stringify(taskList));
     } else {
         alert("Please! Enter a task name.");
     }
@@ -75,6 +80,7 @@ btnAdd.addEventListener("click", (event) => {
     event.preventDefault();
 });
 
+// Delete a task
 function deleteTask(id) {
     let deleteId;
 
@@ -87,9 +93,12 @@ function deleteTask(id) {
     deleteId = taskList.findIndex(task => task.id == id);
 
     taskList.splice(deleteId, 1);
-    displayTask();
+    displayTask(document.querySelector("span.active").id);
+
+    localStorage.setItem("taskList", JSON.stringify(taskList));
 }
 
+// Update
 function updateTask(taskId, taskName) {
     editId = taskId;
     isEditTask = true;
@@ -99,13 +108,14 @@ function updateTask(taskId, taskName) {
     btnAdd.innerHTML = "Update";
 }
 
-btnClear.addEventListener("click", (event) => {
+// Clear all
+btnClear.addEventListener("click", () => {
     taskList.splice(0, taskList.length);
-    displayTask();
-
-    event.preventDefault();
+    localStorage.setItem("taskList", JSON.stringify(taskList));
+    displayTask("all");
 });
 
+// Checkbox
 function updateStatus(selectedTask) {
     let label = selectedTask.nextElementSibling;
     let status;
@@ -123,4 +133,17 @@ function updateStatus(selectedTask) {
             task.status = status;
         }
     }
+
+    displayTask(document.querySelector("span.active").id);
+
+    localStorage.setItem("taskList", JSON.stringify(taskList));
+}
+
+// Filters
+for (let span of filters) {
+    span.addEventListener("click", () => {
+        document.querySelector("span.active").classList.remove("active");
+        span.classList.add("active");
+        displayTask(span.id)
+    });
 }
